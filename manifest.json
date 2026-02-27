@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "Jackon Snay.io Script",
+  "version": "1.0",
+  "description": "Jackon için Snay.io mod menüsü. FPS seçici, kalite ayarları ve daha fazlası.",
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.snay.io/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Jackon Snay.io Script",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.snay.io/*"],
+      "js": ["content_injector.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "inject.js",
+        "icons/*"
+      ],
+      "matches": [
+        "*://*.snay.io/*"
+      ]
+    }
+  ]
+}
