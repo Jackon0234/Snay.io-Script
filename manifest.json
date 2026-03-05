@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Jackon Snay.io Script",
   "version": "1.0",
-  "description": "Jackon için Snay.io mod menüsü. FPS seçici, kalite ayarları ve daha fazlası.",
+  "description": "Professional mod menu for Snay.io featuring performance optimization, macro sequences, and advanced UI customizations.",
   "permissions": [
     "scripting",
     "activeTab",
