@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://capsule-render.vercel.app/render?type=waving&color=auto&height=200&section=header&text=Snay.io%20Advanced%20Script&fontSize=60&animation=fadeIn" />
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=150&section=header&text=Snay.io%20Advanced%20Script&fontSize=50&animation=fadeIn" alt="Header Banner" />
 </p>
 
 <div align="center">
@@ -19,7 +19,7 @@
 
 ## 📸 Preview
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Jackon0234/Assest/main/menugorunum.png" width="85%" style="border-radius: 10px; border: 2px solid #444;">
+  <img src="https://raw.githubusercontent.com/Jackon0234/Assest/main/menugorunum.png" width="500" style="border-radius: 10px; border: 2px solid #444; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
 </p>
 
 ---
