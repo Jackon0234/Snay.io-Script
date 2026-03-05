@@ -58,7 +58,7 @@
         selectedSequence: "Macro",
         selectedPreSequence: "Split -> Double Split -> Double Split",
 
-        // Sequence presets
+
         sequencePresets: [
             "Macro",
             "Split",
@@ -139,7 +139,7 @@
         return false;
     }
 
-    function setupChatInputListener() { }
+
 
     function createSequenceModeIndicator() {
         sequenceModeIndicator = document.createElement('div');
@@ -821,49 +821,40 @@
         return row;
     }
 
-    function triggerKeyEvent(type, key) {
-        let keyCode = 0;
-        let code = '';
+    function dispatchKey(type, key) {
+        if (!key) return;
+        let keyCode = 0, code = '', eventKey = key;
+        const k = key.toUpperCase();
 
-        if (/^[A-Z0-9]$/.test(key)) {
-            keyCode = key.charCodeAt(0);
-            code = (key >= '0' && key <= '9') ? `Digit${key}` : `Key${key}`;
-        } else if (key === 'SPACE') {
-            keyCode = 32; code = 'Space'; key = ' ';
-        } else if (key === 'SHIFT') {
-            keyCode = 16; code = 'ShiftLeft'; key = 'Shift';
-        } else if (key === 'W') {
-            keyCode = 87; code = 'KeyW'; key = 'w';
-        } else if (key === 'ENTER') {
-            keyCode = 13; code = 'Enter'; key = 'Enter';
+        if (k === 'SPACE') {
+            keyCode = 32; code = 'Space'; eventKey = ' ';
+        } else if (k === 'SHIFT') {
+            keyCode = 16; code = 'ShiftLeft'; eventKey = 'Shift';
+        } else if (k === 'ENTER') {
+            keyCode = 13; code = 'Enter'; eventKey = 'Enter';
+        } else if (k === 'W') {
+            keyCode = 87; code = 'KeyW'; eventKey = 'w';
+        } else if (/^[A-Z0-9]$/.test(k)) {
+            keyCode = k.charCodeAt(0);
+            code = (k >= '0' && k <= '9') ? `Digit${k}` : `Key${k}`;
+            eventKey = k.toLowerCase();
         } else {
-            keyCode = key.charCodeAt(0);
+            keyCode = k.charCodeAt(0);
             if (keyCode >= 65 && keyCode <= 90) {
-                code = `Key${key}`;
-            } else {
-                console.warn("Unhandled key in triggerKeyEvent:", key);
-                return;
+                code = `Key${k}`;
+                eventKey = k.toLowerCase();
             }
         }
 
+        if (!keyCode) return;
+
         try {
-            const event = new KeyboardEvent(type, {
-                key: key,
-                code: code,
-                keyCode: keyCode,
-                which: keyCode,
-                bubbles: true,
-                cancelable: true
-            });
-            window.dispatchEvent(event);
+            window.dispatchEvent(new KeyboardEvent(type, {
+                key: eventKey, code, keyCode, which: keyCode,
+                bubbles: true, cancelable: true
+            }));
         } catch (e) {
-            try {
-                const event = document.createEvent('KeyboardEvent');
-                event.initKeyEvent(type, true, true, window, false, false, false, false, keyCode, 0);
-                window.dispatchEvent(event);
-            } catch (err) {
-                console.error('Could not trigger key event:', err);
-            }
+            console.error('Dispatch failed:', e);
         }
     }
 
@@ -1010,34 +1001,26 @@
         const macroKey = getGameKeybind("Macro");
         const quadKey = getGameKeybind("Quad Split");
 
-        if (macroKey) {
-            triggerKeyEvent('keydown', macroKey);
-        }
-        if (quadKey) {
-            triggerKeyEvent('keydown', quadKey);
-        }
+        dispatchKey('keydown', macroKey);
+        dispatchKey('keydown', quadKey);
 
         setTimeout(() => {
-            if (macroKey) triggerKeyEvent('keyup', macroKey);
-            if (quadKey) triggerKeyEvent('keyup', quadKey);
+            dispatchKey('keyup', macroKey);
+            dispatchKey('keyup', quadKey);
         }, 50);
     }
 
     let isSpammingFastFeed = false;
     let spamFastFeedIntervalId = null;
 
-    function doSpamAction() {
-        doComboFastFeed();
-    }
+
 
     function startSpamming() {
         if (spamFastFeedIntervalId) clearInterval(spamFastFeedIntervalId);
-
         isSpammingFastFeed = true;
-        doSpamAction();
-        spamFastFeedIntervalId = setInterval(doSpamAction, savedState.spamFastFeedInterval);
-
-        if (savedState.spamFastFeedMode === 'toggle') showToast("Spam Fast Feed ON");
+        doComboFastFeed();
+        spamFastFeedIntervalId = setInterval(doComboFastFeed, savedState.spamFastFeedInterval);
+        if (savedState.spamFastFeedMode === 'toggle') showToast('Spam Fast Feed ON');
         updateMacroStatus('fast-feed', 'Spam Fast Feed', true);
     }
 
@@ -1055,13 +1038,8 @@
 
     function doQuadSpamAction() {
         const quadKey = getGameKeybind("Clip");
-
-        if (quadKey) {
-            triggerKeyEvent('keydown', quadKey);
-            setTimeout(() => {
-                triggerKeyEvent('keyup', quadKey);
-            }, 50);
-        }
+        dispatchKey('keydown', quadKey);
+        setTimeout(() => dispatchKey('keyup', quadKey), 50);
     }
 
     function startSpammingQuad() {
@@ -1086,19 +1064,14 @@
 
     function doSpamWAction() {
         const feedKey = getGameKeybind("Feed");
-
-        if (feedKey) {
-            triggerKeyEvent('keydown', feedKey);
-            setTimeout(() => {
-                triggerKeyEvent('keyup', feedKey);
-            }, 50);
-        }
+        dispatchKey('keydown', feedKey);
+        setTimeout(() => dispatchKey('keyup', feedKey), 50);
     }
 
     function startSpammingW() {
         if (spamWIntervalId) clearInterval(spamWIntervalId);
         isSpammingW = true;
-        doSpamAction();
+        doSpamWAction();
         spamWIntervalId = setInterval(doSpamWAction, savedState.spamWInterval);
         if (savedState.spamWMode === 'toggle') showToast("Spam W (Feed) ON");
         updateMacroStatus('w-spam', 'Spam W', true);
@@ -1262,88 +1235,11 @@
         setGameMod(20, 200, 'Aggressive Mode');
     }
 
-    function dispatchSequenceKeyDown(key) {
-        let keyCode = 0;
-        let code = '';
-        let eventKey = key;
-
-        if (/^[A-Z0-9]$/.test(key)) {
-            keyCode = key.charCodeAt(0);
-            code = (key >= '0' && key <= '9') ? `Digit${key}` : `Key${key}`;
-            eventKey = key.toLowerCase();
-        } else if (key === 'SPACE') {
-            keyCode = 32;
-            code = 'Space';
-            eventKey = ' ';
-        } else if (key === 'SHIFT') {
-            keyCode = 16;
-            code = 'ShiftLeft';
-            eventKey = 'Shift';
-        } else {
-            keyCode = key.charCodeAt(0);
-            if (keyCode >= 65 && keyCode <= 90) {
-                code = `Key${key}`;
-                eventKey = key.toLowerCase();
-            }
-        }
-
-        try {
-            const event = new KeyboardEvent('keydown', {
-                key: eventKey,
-                code: code,
-                keyCode: keyCode,
-                which: keyCode,
-                bubbles: true,
-                cancelable: true
-            });
-            window.dispatchEvent(event);
-        } catch (e) {
-            console.error('Failed to dispatch keydown:', e);
-        }
-    }
-
-    function dispatchSequenceKeyUp(key) {
-        let keyCode = 0;
-        let code = '';
-        let eventKey = key;
-
-        if (/^[A-Z0-9]$/.test(key)) {
-            keyCode = key.charCodeAt(0);
-            code = (key >= '0' && key <= '9') ? `Digit${key}` : `Key${key}`;
-            eventKey = key.toLowerCase();
-        } else if (key === 'SPACE') {
-            keyCode = 32;
-            code = 'Space';
-            eventKey = ' ';
-        } else if (key === 'SHIFT') {
-            keyCode = 16;
-            code = 'ShiftLeft';
-            eventKey = 'Shift';
-        } else {
-            keyCode = key.charCodeAt(0);
-            if (keyCode >= 65 && keyCode <= 90) {
-                code = `Key${key}`;
-                eventKey = key.toLowerCase();
-            }
-        }
-
-        try {
-            const event = new KeyboardEvent('keyup', {
-                key: eventKey,
-                code: code,
-                keyCode: keyCode,
-                which: keyCode,
-                bubbles: true,
-                cancelable: true
-            });
-            window.dispatchEvent(event);
-        } catch (e) {
-            console.error('Failed to dispatch keyup:', e);
-        }
-    }
+    const dispatchSequenceKeyDown = (key) => dispatchKey('keydown', key);
+    const dispatchSequenceKeyUp = (key) => dispatchKey('keyup', key);
 
     function triggerSequenceMacro(sequence) {
-        if (isChatInputFocused || !sequence) return;
+        if (isChatActive() || !sequence) return;
 
         if (sequence === "Split -> Double Split -> Double Split") {
             dispatchSequenceKeyDown("Shift");
@@ -1455,25 +1351,15 @@
         });
     }
 
-    function setupSequenceKeybindListeners() {
-        const setSequenceMacroKeybind = (btn) => setupKeybindListener(btn, 'sequenceMacroKey', 'Sequence Macro Key');
-        const setSequenceSplitKeybind = (btn) => setupKeybindListener(btn, 'sequenceSplitKey', 'Sequence Split Key');
-        const setSequenceDoubleSplitKeybind = (btn) => setupKeybindListener(btn, 'sequenceDoubleSplitKey', 'Sequence Double Split Key');
-        const setSequenceQuadSplitKeybind = (btn) => setupKeybindListener(btn, 'sequenceQuadSplitKey', 'Sequence Quad Split Key');
-        const setSequenceTriggerKeybind = (btn) => setupKeybindListener(btn, 'sequenceTriggerKey', 'Sequence Trigger Key');
-        const setSequenceModeToggleKeybind = (btn) => setupKeybindListener(btn, 'sequenceModeToggleKey', 'Sequence Mode Toggle Key');
-        const setSequencePreSplitKeybind = (btn) => setupKeybindListener(btn, 'sequencePreSplitTriggerKey', 'Pre-Split Trigger Key');
-
-        return {
-            setSequenceMacroKeybind,
-            setSequenceSplitKeybind,
-            setSequenceDoubleSplitKeybind,
-            setSequenceQuadSplitKeybind,
-            setSequenceTriggerKeybind,
-            setSequenceModeToggleKeybind,
-            setSequencePreSplitKeybind
-        };
-    }
+    const sequenceKeybinds = {
+        setSequenceMacroKeybind: (btn) => setupKeybindListener(btn, 'sequenceMacroKey', 'Sequence Macro Key'),
+        setSequenceSplitKeybind: (btn) => setupKeybindListener(btn, 'sequenceSplitKey', 'Sequence Split Key'),
+        setSequenceDoubleSplitKeybind: (btn) => setupKeybindListener(btn, 'sequenceDoubleSplitKey', 'Sequence Double Split Key'),
+        setSequenceQuadSplitKeybind: (btn) => setupKeybindListener(btn, 'sequenceQuadSplitKey', 'Sequence Quad Split Key'),
+        setSequenceTriggerKeybind: (btn) => setupKeybindListener(btn, 'sequenceTriggerKey', 'Sequence Trigger Key'),
+        setSequenceModeToggleKeybind: (btn) => setupKeybindListener(btn, 'sequenceModeToggleKey', 'Sequence Mode Toggle Key'),
+        setSequencePreSplitKeybind: (btn) => setupKeybindListener(btn, 'sequencePreSplitTriggerKey', 'Pre-Split Trigger Key')
+    };
 
     defineCSSVariables();
 
@@ -2937,7 +2823,6 @@
 
     sequencesPanel.appendChild(createSettingCategory('🎯 Key Bindings'));
 
-    const sequenceKeybinds = setupSequenceKeybindListeners();
 
     const seqMacroKeyRow = createSettingRow('Macro Key');
     const seqMacroKeyBtn = document.createElement('button');
@@ -3000,9 +2885,9 @@
     const macroDelayRow = createSettingRow('Sequence Delay (ms)');
     const macroDelayInput = document.createElement('input');
     macroDelayInput.type = 'number';
-    macroDelayInput.min = '0';               // 🔁 CHANGED: was '50'
+    macroDelayInput.min = '0';
     macroDelayInput.max = '2000';
-    macroDelayInput.step = '1';              // 🔁 CHANGED: was '10' (optional)
+    macroDelayInput.step = '1';
     macroDelayInput.value = savedState.sequenceMacroDelay;
     Object.assign(macroDelayInput.style, {
         width: '100px',
@@ -3012,7 +2897,7 @@
 
     macroDelayInput.onchange = () => {
         let val = parseInt(macroDelayInput.value);
-        if (isNaN(val) || val < 0) val = 0;   // 🔁 CHANGED: was '< 50'
+        if (isNaN(val) || val < 0) val = 0;
         if (val > 2000) val = 2000;
         macroDelayInput.value = val;
         savedState.sequenceMacroDelay = val;
@@ -3161,7 +3046,6 @@
         let isDown = false, offsetX = 0, offsetY = 0;
 
         node.addEventListener('mousedown', e => {
-            // Allow dragging even if collapsed, but check if we're clicking the logo or header
             if (e.target.closest('button, input, select, a') ||
                 e.target === uiContent ||
                 (uiContent.contains(e.target) && uiContent.scrollHeight > uiContent.clientHeight &&
@@ -3377,7 +3261,6 @@
         updateGameColorsWithRGB(savedState.accentColor);
     }
 
-    setupChatInputListener();
     createSequenceModeIndicator();
     handleSequenceKeyEvents();
 
