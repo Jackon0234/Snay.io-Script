@@ -12,6 +12,7 @@
         fps: 60,
         qualityPercent: 100,
         menuWidth: 350,
+        uiVisible: true,
         soundEffects: true,
         notifications: true,
         comboFastFeedKey: "G",
@@ -162,6 +163,7 @@
             minWidth: '250px'
         });
         updateSequenceModeIndicator();
+        sequenceModeIndicator.style.display = savedState.uiVisible ? 'block' : 'none';
         document.body.appendChild(sequenceModeIndicator);
     }
 
@@ -3084,7 +3086,6 @@
         });
     })(ui);
 
-    let uiVisible = true;
 
     document.addEventListener('keydown', e => {
         if (isWaitingForKeybind || isChatActive()) return;
@@ -3093,21 +3094,26 @@
             e.preventDefault();
             e.stopPropagation();
 
-            uiVisible = !uiVisible;
+            savedState.uiVisible = !savedState.uiVisible;
+            persist();
 
-            if (uiVisible) {
+            if (savedState.uiVisible) {
                 ui.style.display = 'flex';
                 if (sequenceModeIndicator) sequenceModeIndicator.style.display = 'block';
                 originalUIRAF(() => {
                     ui.style.opacity = (savedState.uiOpacity / 100);
                     ui.style.transform = 'translateY(0)';
                 });
+                const discBtn = document.getElementById('jackon-discord-btn');
+                if (discBtn) discBtn.style.display = 'inline-block';
             } else {
                 ui.style.opacity = '0';
                 ui.style.transform = 'translateY(-12px)';
                 if (sequenceModeIndicator) sequenceModeIndicator.style.display = 'none';
+                const discBtn = document.getElementById('jackon-discord-btn');
+                if (discBtn) discBtn.style.display = 'none';
                 setTimeout(() => {
-                    if (!uiVisible) ui.style.display = 'none';
+                    if (!savedState.uiVisible) ui.style.display = 'none';
                 }, 400);
             }
 
@@ -3249,19 +3255,19 @@
         applyCustomBackground(savedState.customBackgroundUrl, false);
     }
 
+    createSequenceModeIndicator();
+
     if (savedState.collapsed) {
         setCollapseState(true);
     }
 
-    if (savedState.killChainControlEnabled) {
-        setupKillChainListener();
+    if (!savedState.uiVisible) {
+        ui.style.display = 'none';
+        ui.style.opacity = '0';
+        ui.style.transform = 'translateY(-12px)';
+        if (sequenceModeIndicator) sequenceModeIndicator.style.display = 'none';
     }
 
-    if (savedState.smartRGBGameColors && savedState.rgbModeEnabled) {
-        updateGameColorsWithRGB(savedState.accentColor);
-    }
-
-    createSequenceModeIndicator();
     handleSequenceKeyEvents();
 
     (function addDiscordProfileButton() {
@@ -3296,7 +3302,7 @@
             }
 
             Object.assign(btn.style, {
-                display: 'inline-block',
+                display: savedState.uiVisible ? 'inline-block' : 'none',
                 width: refW + 'px',
                 height: refH + 'px',
                 padding: '0',
