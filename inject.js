@@ -15,14 +15,14 @@
         uiVisible: true,
         soundEffects: true,
         notifications: true,
-        comboFastFeedKey: "G",
+        comboFastFeedKey: "1",
         leftClickMacroEnabled: false,
         spamFastFeedKey: "H",
-        spamFastFeedMode: "toggle",
-        spamFastFeedInterval: 1000,
+        spamFastFeedMode: "hold",
+        spamFastFeedInterval: 450,
         quickRespawnKey: "4",
         autoRespawnEnabled: false,
-        quadFeedKey: "R",
+        quadFeedKey: "9",
         spamQuadFeedMode: "toggle",
         quadFeedInterval: 500,
         spamWKey: "",
@@ -47,14 +47,14 @@
         quickChatKey4: "F4",
         smartRGBGameColors: true,
         killChainControlEnabled: true,
-        sequenceMacroDelay: 500,
+        sequenceMacroDelay: 0,
         sequenceMacroKey: "E",
         sequenceSplitKey: "SPACE",
         sequenceDoubleSplitKey: "D",
-        sequenceQuadSplitKey: "F",
-        sequenceTriggerKey: "F",
-        sequenceModeToggleKey: "G",
-        sequencePreSplitTriggerKey: "P",
+        sequenceQuadSplitKey: "C",
+        sequenceTriggerKey: "G",
+        sequenceModeToggleKey: "O",
+        sequencePreSplitTriggerKey: "Q",
         sequenceOptionMode: "A",
         selectedSequence: "Macro",
         selectedPreSequence: "Split -> Double Split -> Double Split",
@@ -866,6 +866,9 @@
         if (isWaitingForKeybind) return;
         isWaitingForKeybind = true;
 
+        savedState[stateKey] = '';
+        persist();
+
         const originalText = buttonEl.innerText;
         buttonEl.innerText = '...';
         buttonEl.style.background = 'var(--accent-color)';
@@ -901,7 +904,7 @@
 
         const onCancel = (e) => {
             if (e.target !== buttonEl) {
-                buttonEl.innerText = originalText;
+                buttonEl.innerText = 'NONE';
                 buttonEl.style.background = 'var(--accent-color)';
                 buttonEl.style.filter = 'brightness(1)';
                 document.removeEventListener('keydown', onKeydown, true);
